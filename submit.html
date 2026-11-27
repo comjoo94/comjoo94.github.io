@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>실습 결과 제출 · 갤러리</title>
+<style>
+  :root {
+    --navy: #0b2a5b; --blue: #1559c7; --sky: #dce8fb; --bg: #f4f7fc;
+    --text: #12233f; --muted: #55657e; --green: #1f883d; --red: #c43b3b; --orange: #e07a1f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+  header { position: relative; background: var(--navy); color: #fff; padding: 40px 16px 18px; text-align: center; }
+  header h1 { margin: 0 0 4px; font-size: 1.8rem; }
+  header p { margin: 0; color: #c9daf2; }
+  .home { position: absolute; left: 16px; top: 14px; color: #c9daf2; text-decoration: none; font-size: 0.9rem; }
+  .home:hover { color: #fff; }
+  .status { display: inline-block; margin-top: 10px; font-size: 0.85rem; padding: 3px 12px; border-radius: 999px; background: #ffffff22; }
+  .status.ok::before { content: "● "; color: #6fe39a; }
+  .status.demo::before { content: "● "; color: #ffc58a; }
+  .status.err::before { content: "● "; color: #ff8a8a; }
+  main { max-width: 1040px; margin: 20px auto 40px; padding: 0 16px; display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; }
+  .panel { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 4px 14px rgba(11, 42, 91, 0.08); }
+  .panel h2 { margin: 0 0 8px; font-size: 1.15rem; color: var(--navy); }
+  label { display: block; font-size: 0.85rem; color: var(--muted); margin: 10px 0 4px; }
+  input, select, textarea, button { width: 100%; font: inherit; font-size: 1rem; padding: 11px; border-radius: 10px; border: 1px solid #c5d4ea; }
+  textarea { resize: vertical; min-height: 64px; }
+  .tracks { display: flex; gap: 8px; }
+  .tracks button { background: var(--sky); color: var(--navy); border: none; font-weight: 700; }
+  .tracks button.active { background: var(--navy); color: #fff; }
+  .send { margin-top: 14px; background: var(--blue); color: #fff; border: none; font-weight: 700; cursor: pointer; font-size: 1.05rem; }
+  .send:disabled { opacity: 0.5; cursor: wait; }
+  .test { margin-top: 6px; background: #fff; color: var(--blue); border: 1px solid var(--blue); font-weight: 700; cursor: pointer; }
+  .msg { min-height: 1.3em; margin: 8px 0 0; font-size: 0.9rem; }
+  .msg.err { color: var(--red); }
+  .msg.ok { color: var(--green); }
+  .hint { font-size: 0.8rem; color: var(--muted); margin: 4px 0 0; }
+  .progress { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+  .progress b { font-size: 2.2rem; color: var(--blue); }
+  .bar { height: 12px; background: var(--sky); border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
+  .bar > div { height: 100%; width: 0; background: var(--blue); transition: width 0.6s; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .toolbar input { flex: 1; min-width: 160px; }
+  .chip { width: auto; padding: 6px 14px; border-radius: 999px; border: none; background: var(--sky); color: var(--navy); font-size: 0.9rem; cursor: pointer; }
+  .chip.active { background: var(--navy); color: #fff; }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .card { border: 1px solid #dfe7f3; border-top: 6px solid var(--blue); border-radius: 12px; padding: 14px; background: #fff; display: flex; flex-direction: column; gap: 6px; }
+  .card.b { border-top-color: var(--orange); }
+  .card .title { font-weight: 800; font-size: 1.05rem; overflow-wrap: anywhere; }
+  .card .who { font-size: 0.85rem; color: var(--muted); }
+  .card .desc { font-size: 0.92rem; overflow-wrap: anywhere; flex: 1; }
+  .card .tag { align-self: flex-start; font-size: 0.75rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--sky); color: var(--navy); }
+  .card.b .tag { background: #fde6cf; color: #8a4500; }
+  .card a.open { display: block; text-align: center; padding: 9px; border-radius: 8px; background: var(--navy); color: #fff; text-decoration: none; font-weight: 700; margin-top: 4px; }
+  .card a.open:hover { background: var(--blue); }
+  .card .url { font-size: 0.75rem; color: var(--muted); overflow-wrap: anywhere; }
+  .card.new { animation: flash 1.4s ease-out; }
+  @keyframes flash { from { background: #fff4d6; } to { background: #fff; } }
+  .empty { color: var(--muted); text-align: center; padding: 30px; grid-column: 1 / -1; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 0 16px 24px; }
+  @media (max-width: 820px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="index.html">← 처음으로</a>
+  <h1>🚀 실습 결과 제출 · 갤러리</h1>
+  <p>배포한 내 서비스의 URL을 올리고, 친구들의 결과물을 써 보세요</p>
+  <span class="status" id="status">연결 확인 중…</span>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>내 결과물 제출</h2>
+    <form id="form" novalidate>
+      <label for="name">이름 또는 닉네임 <span style="color:var(--red)">*</span></label>
+      <input id="name" maxlength="20" placeholder="예: 김민준 / 민준" autocomplete="off">
+      <label for="dept">학과</label>
+      <input id="dept" maxlength="30" placeholder="예: 기계공학부">
+      <label>실습 트랙</label>
+      <div class="tracks" id="tracks">
+        <button type="button" data-track="A 정적웹" class="active">A 정적웹</button>
+        <button type="button" data-track="B 동적웹">B 동적웹</button>
+      </div>
+      <label for="title">서비스 이름 <span style="color:var(--red)">*</span></label>
+      <input id="title" maxlength="40" placeholder="예: D-Day 과제 플래너">
+      <label for="url">공개 URL <span style="color:var(--red)">*</span></label>
+      <input id="url" maxlength="200" inputmode="url" placeholder="https://아이디.github.io/저장소명/">
+      <p class="hint">GitHub Pages 주소를 붙여넣고, 아래 버튼으로 열리는지 먼저 확인하세요.</p>
+      <button class="test" id="testBtn" type="button">내 URL 새 탭에서 열어 보기</button>
+      <label for="desc">한 줄 소개 (100자 이내)</label>
+      <textarea id="desc" maxlength="100" placeholder="누구의 어떤 불편을 해결하나요?"></textarea>
+      <button class="send" id="send" type="submit">제출하기</button>
+      <p class="msg" id="formMsg" role="status"></p>
+      <p class="hint">다시 제출하면 갤러리에는 같은 이름의 최신 제출만 보입니다. 제출 내용은 강의실 모두에게 공개되니 연락처 등 개인정보는 적지 마세요.</p>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="progress"><b id="count">0</b><span id="countLabel">명 제출</span></div>
+    <div class="bar"><div id="bar"></div></div>
+    <div class="toolbar">
+      <input id="search" placeholder="이름·서비스명 검색">
+      <button type="button" class="chip active" data-filter="all">전체</button>
+      <button type="button" class="chip" data-filter="A 정적웹">A 정적웹</button>
+      <button type="button" class="chip" data-filter="B 동적웹">B 동적웹</button>
+    </div>
+    <div class="gallery" id="gallery"><p class="empty">아직 제출된 결과물이 없습니다.</p></div>
+  </section>
+</main>
+
+<footer>생성형 AI 도구를 활용해 제작 · 제출 내용은 강사의 구글 시트에 저장됩니다</footer>
+
+<script src="config.js"></script>
+<script>
+  const REFRESH_MS = 8000;
+  const DEMO = !API_URL;
+  const DEMO_KEY = "submit-demo";
+  let track = "A 정적웹";
+  let filter = "all";
+  let latestRows = [];
+  let seen = new Set();
+
+  // ---------- URL 검사: https 주소만 링크로 만든다 ----------
+  function safeUrl(text) {
+    try {
+      const u = new URL(String(text).trim());
+      return u.protocol === "https:" ? u.href : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ---------- 서버(또는 데모 저장소)와 주고받기 ----------
+  async function fetchRows() {
+    if (DEMO) return JSON.parse(localStorage.getItem(DEMO_KEY) || "[]");
+    const res = await fetch(API_URL + "?type=submit", { cache: "no-store" });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "읽기 실패");
+    return data.rows;
+  }
+
+  async function sendRow(row) {
+    if (DEMO) {
+      const rows = JSON.parse(localStorage.getItem(DEMO_KEY) || "[]");
+      rows.push({ time: new Date().toISOString(), ...row });
+      localStorage.setItem(DEMO_KEY, JSON.stringify(rows));
+      return;
+    }
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // CORS 사전 요청 회피
+      body: JSON.stringify({ type: "submit", ...row })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "저장 실패");
+  }
+
+  // ---------- 화면 그리기 (사용자 입력은 textContent로만) ----------
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  // 같은 이름(대소문자·공백 무시)은 가장 최근 제출만 남긴다
+  function latestPerPerson(rows) {
+    const map = new Map();
+    rows.forEach(r => {
+      const key = String(r.name).replace(/\s+/g, "").toLowerCase();
+      const prev = map.get(key);
+      if (!prev || new Date(r.time) >= new Date(prev.time)) map.set(key, r);
+    });
+    return [...map.values()].sort((a, b) => new Date(b.time) - new Date(a.time));
+  }
+
+  function render() {
+    const people = latestPerPerson(latestRows);
+    const expected = (typeof COURSE !== "undefined" && COURSE.expected) || people.length || 1;
+    document.getElementById("count").textContent = people.length;
+    document.getElementById("countLabel").textContent = `명 제출 / ${expected}명`;
+    document.getElementById("bar").style.width = Math.min(100, people.length / expected * 100) + "%";
+
+    const q = document.getElementById("search").value.trim().toLowerCase();
+    const shown = people.filter(r =>
+      (filter === "all" || r.track === filter) &&
+      (!q || (r.name + " " + r.title + " " + r.dept).toLowerCase().includes(q)));
+
+    const box = document.getElementById("gallery");
+    box.replaceChildren();
+    if (shown.length === 0) {
+      box.appendChild(el("p", "empty", people.length ? "조건에 맞는 결과물이 없습니다." : "아직 제출된 결과물이 없습니다."));
+      return;
+    }
+    shown.forEach(r => {
+      const key = r.time + r.name;
+      const card = el("article", "card" + (r.track === "B 동적웹" ? " b" : "") + (seen.size && !seen.has(key) ? " new" : ""));
+      card.append(el("span", "tag", r.track || "A 정적웹"), el("div", "title", r.title), el("div", "who", [r.name, r.dept].filter(Boolean).join(" · ")));
+      if (r.desc) card.appendChild(el("div", "desc", r.desc));
+      const href = safeUrl(r.url);
+      if (href) {
+        const a = el("a", "open", "서비스 열기 ↗");
+        a.href = href;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        card.append(a, el("div", "url", href));
+      } else {
+        card.appendChild(el("div", "url", "열 수 없는 주소입니다"));
+      }
+      box.appendChild(card);
+    });
+    seen = new Set(latestRows.map(r => r.time + r.name));
+  }
+
+  function setStatus(kind, text) {
+    const s = document.getElementById("status");
+    s.className = "status " + kind;
+    s.textContent = text;
+  }
+
+  async function refresh() {
+    try {
+      latestRows = await fetchRows();
+      render();
+      setStatus(DEMO ? "demo" : "ok", DEMO ? "데모 모드 · 이 브라우저에만 저장" : "구글 시트 연결됨");
+    } catch (e) {
+      setStatus("err", "연결 오류 · 잠시 후 다시 시도");
+      console.error(e);
+    }
+  }
+
+  // ---------- 입력 처리 ----------
+  document.getElementById("tracks").addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    track = b.dataset.track;
+    document.querySelectorAll("#tracks button").forEach(x => x.classList.toggle("active", x === b));
+  });
+
+  document.querySelector(".toolbar").addEventListener("click", e => {
+    const b = e.target.closest(".chip");
+    if (!b) return;
+    filter = b.dataset.filter;
+    document.querySelectorAll(".toolbar .chip").forEach(x => x.classList.toggle("active", x === b));
+    render();
+  });
+  document.getElementById("search").addEventListener("input", render);
+
+  document.getElementById("testBtn").addEventListener("click", () => {
+    const out = document.getElementById("formMsg");
+    const href = safeUrl(document.getElementById("url").value);
+    if (!href) { out.className = "msg err"; out.textContent = "https:// 로 시작하는 올바른 주소가 아닙니다."; return; }
+    window.open(href, "_blank", "noopener");
+    out.className = "msg"; out.textContent = "새 탭에서 내 서비스가 열렸는지 확인한 뒤 제출하세요.";
+  });
+
+  document.getElementById("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const out = document.getElementById("formMsg");
+    const name = document.getElementById("name").value.trim();
+    const dept = document.getElementById("dept").value.trim();
+    const title = document.getElementById("title").value.trim();
+    const url = document.getElementById("url").value.trim();
+    const desc = document.getElementById("desc").value.trim();
+
+    const fail = t => { out.className = "msg err"; out.textContent = t; };
+    if (!name) return fail("이름 또는 닉네임을 입력해 주세요.");
+    if (!title) return fail("서비스 이름을 입력해 주세요.");
+    if (!safeUrl(url)) return fail("https:// 로 시작하는 공개 URL을 입력해 주세요.");
+    if (!/github\.io/i.test(url) && !confirm("GitHub Pages(github.io) 주소가 아닙니다. 그대로 제출할까요?")) return;
+
+    const btn = document.getElementById("send");
+    btn.disabled = true;
+    out.className = "msg"; out.textContent = "제출하는 중…";
+    try {
+      await sendRow({ name, dept, track, title, url: safeUrl(url), desc });
+      out.className = "msg ok"; out.textContent = "제출되었습니다! 오른쪽 갤러리에서 확인하세요.";
+      ["title", "url", "desc"].forEach(id => (document.getElementById(id).value = ""));
+      await refresh();
+    } catch (err) {
+      fail("제출에 실패했습니다: " + err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  refresh();
+  setInterval(refresh, REFRESH_MS);
+</script>
+</body>
+</html>

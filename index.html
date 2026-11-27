@@ -3,245 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>실시간 강의실 방명록</title>
+<title>바이브코딩 특강 · 강의실</title>
 <style>
   :root {
     --navy: #0b2a5b; --blue: #1559c7; --sky: #dce8fb; --bg: #f4f7fc;
-    --text: #12233f; --muted: #55657e; --green: #1f883d; --red: #c43b3b; --orange: #e07a1f;
+    --text: #12233f; --muted: #55657e; --orange: #e07a1f;
   }
   * { box-sizing: border-box; }
   body { margin: 0; font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
-  header { background: var(--navy); color: #fff; padding: 24px 16px 18px; text-align: center; }
-  header h1 { margin: 0 0 4px; font-size: 1.8rem; }
-  header p { margin: 0; color: #c9daf2; }
-  .status { display: inline-block; margin-top: 10px; font-size: 0.85rem; padding: 3px 12px; border-radius: 999px; background: #ffffff22; }
+  .hero { background: linear-gradient(160deg, #0b2a5b 0%, #1559c7 100%); color: #fff; padding: 48px 20px 64px; text-align: center; }
+  .hero .eyebrow { display: inline-block; font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; padding: 4px 14px; border-radius: 999px; background: #ffffff22; margin-bottom: 14px; }
+  .hero h1 { margin: 0 0 10px; font-size: clamp(1.7rem, 5vw, 2.6rem); line-height: 1.25; }
+  .hero p { margin: 0; color: #d6e7ff; font-size: 1.05rem; }
+  .status { display: inline-block; margin-top: 16px; font-size: 0.85rem; padding: 3px 12px; border-radius: 999px; background: #ffffff22; }
   .status.ok::before { content: "● "; color: #6fe39a; }
   .status.demo::before { content: "● "; color: #ffc58a; }
   .status.err::before { content: "● "; color: #ff8a8a; }
-  main { max-width: 960px; margin: 20px auto 40px; padding: 0 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .panel { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 4px 14px rgba(11, 42, 91, 0.08); }
-  .panel h2 { margin: 0 0 12px; font-size: 1.15rem; color: var(--navy); }
-  .full { grid-column: 1 / -1; }
-  label { display: block; font-size: 0.85rem; color: var(--muted); margin: 10px 0 4px; }
-  select, input, button { width: 100%; font: inherit; font-size: 1.05rem; padding: 12px; border-radius: 10px; border: 1px solid #c5d4ea; }
-  .levels { display: flex; gap: 8px; }
-  .levels button { background: var(--sky); color: var(--navy); border: none; font-weight: 700; }
-  .levels button.active { background: var(--navy); color: #fff; }
-  .send { margin-top: 14px; background: var(--blue); color: #fff; border: none; font-weight: 700; cursor: pointer; }
-  .send:disabled { opacity: 0.5; cursor: wait; }
-  .msg { min-height: 1.3em; margin: 8px 0 0; font-size: 0.9rem; }
-  .msg.err { color: var(--red); }
-  .msg.ok { color: var(--green); }
-  .bars .row { display: grid; grid-template-columns: 128px 1fr 40px; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 0.95rem; }
-  .bars .track { height: 18px; background: var(--sky); border-radius: 999px; overflow: hidden; }
-  .bars .fill { height: 100%; width: 0; background: var(--blue); border-radius: 999px; transition: width 0.6s; }
-  .bars.level .fill { background: var(--orange); }
-  .bars .num { text-align: right; font-weight: 700; }
-  .total { font-size: 2.4rem; font-weight: 800; color: var(--blue); margin: 0; }
-  ul { list-style: none; padding: 0; margin: 0; max-height: 420px; overflow-y: auto; }
-  li { padding: 12px 4px; border-bottom: 1px solid #e3eaf5; }
-  li .meta { font-size: 0.8rem; color: var(--muted); }
-  li .text { overflow-wrap: anywhere; }
-  li.new { animation: flash 1.2s ease-out; }
-  @keyframes flash { from { background: #fff4d6; } to { background: transparent; } }
-  .empty { color: var(--muted); text-align: center; padding: 20px; }
-  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 0 16px 24px; }
-  @media (max-width: 720px) { main { grid-template-columns: 1fr; } }
+  main { max-width: 920px; margin: -36px auto 40px; padding: 0 16px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  a.card { display: flex; flex-direction: column; gap: 10px; background: #fff; border-radius: 18px; padding: 26px; text-decoration: none; color: var(--text);
+           box-shadow: 0 8px 24px rgba(11, 42, 91, 0.12); border-top: 8px solid var(--blue); transition: transform 0.15s, box-shadow 0.15s; }
+  a.card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(11, 42, 91, 0.18); }
+  a.card.orange { border-top-color: var(--orange); }
+  .card .icon { font-size: 2.4rem; line-height: 1; }
+  .card h2 { margin: 0; font-size: 1.45rem; color: var(--navy); }
+  .card p { margin: 0; color: var(--muted); }
+  .card .stat { margin-top: auto; padding-top: 12px; border-top: 1px solid #e3eaf5; display: flex; justify-content: space-between; align-items: baseline; }
+  .card .stat b { font-size: 1.8rem; color: var(--blue); }
+  .card.orange .stat b { color: #b4500b; }
+  .card .go { font-weight: 700; color: var(--blue); }
+  .card.orange .go { color: #b4500b; }
+  .when { margin: 4px 0 0; font-size: 0.85rem; font-weight: 700; color: var(--navy); }
+  .panel { margin-top: 18px; background: #fff; border-radius: 18px; padding: 22px 26px; box-shadow: 0 4px 14px rgba(11, 42, 91, 0.08); }
+  .panel h3 { margin: 0 0 12px; color: var(--navy); }
+  ol.flow { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; counter-reset: s; }
+  ol.flow li { background: var(--sky); border-radius: 12px; padding: 12px; font-size: 0.92rem; counter-increment: s; }
+  ol.flow li::before { content: counter(s); display: inline-flex; width: 24px; height: 24px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 0.8rem; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; }
+  ol.flow li b { display: block; margin: 4px 0 2px; color: var(--navy); }
+  .share { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .share code { flex: 1; min-width: 220px; background: var(--bg); border: 1px solid #c5d4ea; border-radius: 10px; padding: 10px 12px; font-size: 0.95rem; overflow-wrap: anywhere; }
+  .share button { font: inherit; font-weight: 700; border: none; border-radius: 10px; padding: 10px 16px; background: var(--navy); color: #fff; cursor: pointer; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 0 16px 28px; }
+  @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } ol.flow { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
-<header>
-  <h1>💬 실시간 강의실 방명록</h1>
-  <p>휴대폰으로 남기면 모두의 화면에 바로 나타납니다</p>
+<section class="hero">
+  <span class="eyebrow">비전공자 역량 강화 특강</span>
+  <h1 id="courseTitle">AI 바이브코딩 기반 웹/앱 제작</h1>
+  <p id="courseInfo"></p>
   <span class="status" id="status">연결 확인 중…</span>
-</header>
+</section>
 
 <main>
+  <div class="cards">
+    <a class="card" href="guestbook.html">
+      <span class="icon">💬</span>
+      <h2>실시간 강의실 방명록</h2>
+      <p>전공 · 난이도 · 한 줄 소감을 남기면 모두의 화면에 바로 나타납니다.</p>
+      <p class="when">시연 시간 · 15:15 무렵</p>
+      <div class="stat"><span><b id="gbCount">–</b> 건</span><span class="go">들어가기 →</span></div>
+    </a>
+    <a class="card orange" href="submit.html">
+      <span class="icon">🚀</span>
+      <h2>실습 결과 제출 · 갤러리</h2>
+      <p>GitHub Pages로 배포한 내 서비스 URL을 제출하고 친구들의 결과물을 써 봅니다.</p>
+      <p class="when">제출 시간 · 16:30 전까지</p>
+      <div class="stat"><span><b id="subCount">–</b> 명 제출</span><span class="go">제출하기 →</span></div>
+    </a>
+  </div>
+
   <section class="panel">
-    <h2>한 줄 남기기</h2>
-    <form id="form" novalidate>
-      <label for="major">전공</label>
-      <select id="major">
-        <option value="">선택하세요</option>
-        <option>기계공학</option>
-        <option>전기전자</option>
-        <option>컴퓨터·정보통신</option>
-        <option>화학·신소재</option>
-        <option>건축·토목</option>
-        <option>산업·시스템</option>
-        <option>기타</option>
-      </select>
-      <label>오늘 특강 난이도</label>
-      <div class="levels" id="levels">
-        <button type="button" data-level="쉬움">쉬움</button>
-        <button type="button" data-level="적당" class="active">적당</button>
-        <button type="button" data-level="어려움">어려움</button>
-      </div>
-      <label for="text">한 줄 소감 (100자 이내, 개인정보 금지)</label>
-      <input id="text" maxlength="100" placeholder="예: AI랑 대화만으로 앱이 만들어지는 게 신기했다">
-      <button class="send" id="send" type="submit">보내기</button>
-      <p class="msg" id="formMsg" role="status"></p>
-    </form>
+    <h3>오늘의 실습 흐름</h3>
+    <ol class="flow">
+      <li><b>기획</b>워크북으로 문제 · MVP 3개 정하기</li>
+      <li><b>구현</b>AI와 대화로 index.html 만들기</li>
+      <li><b>배포</b>GitHub Pages로 공개 URL 받기</li>
+      <li><b>공유</b>이 사이트에 URL 제출 · 상호 피드백</li>
+    </ol>
   </section>
 
   <section class="panel">
-    <h2>참여 현황</h2>
-    <p class="total" id="total">0건</p>
-    <div class="bars" id="majorBars"></div>
-    <h2 style="margin-top:18px">난이도</h2>
-    <div class="bars level" id="levelBars"></div>
-  </section>
-
-  <section class="panel full">
-    <h2>방명록 <span style="font-weight:400;color:var(--muted);font-size:0.9rem">· 5초마다 자동 갱신</span></h2>
-    <ul id="list"><li class="empty">아직 글이 없습니다. 첫 글을 남겨 보세요.</li></ul>
+    <h3>이 페이지 주소</h3>
+    <div class="share">
+      <code id="here"></code>
+      <button type="button" id="copy">주소 복사</button>
+    </div>
   </section>
 </main>
 
-<footer>생성형 AI 도구를 활용해 제작 · 입력한 내용은 강사의 구글 시트에 저장됩니다</footer>
+<footer>생성형 AI 도구를 활용해 제작 · 입력한 내용은 강사의 구글 시트에 저장되며 강의실 참가자에게 공개됩니다</footer>
 
+<script src="config.js"></script>
 <script>
-  // ① Apps Script 배포 후 받은 웹 앱 URL(…/exec)을 붙여넣는다.
-  //    비워 두면 '데모 모드'로 이 브라우저 안에서만 동작한다.
-  const API_URL = "https://script.google.com/macros/s/AKfycbzGwrmHfQFP4__PhuUpcDMNx6B6PWrTxBZV1qew4NAhKdDTay0-WNqn67C1-Jo_sP6x8w/exec";
-
-  const REFRESH_MS = 5000;
-  const LEVELS = ["쉬움", "적당", "어려움"];
   const DEMO = !API_URL;
-  let level = "적당";
-  let seen = new Set();
 
-  // ---------- 서버(또는 데모 저장소)와 주고받기 ----------
-  async function fetchRows() {
-    if (DEMO) return JSON.parse(localStorage.getItem("guestbook-demo") || "[]");
-    const res = await fetch(API_URL, { cache: "no-store" });
+  document.getElementById("courseTitle").textContent = COURSE.title;
+  document.getElementById("courseInfo").textContent = `${COURSE.date} · ${COURSE.place}`;
+  document.getElementById("here").textContent = location.href;
+
+  document.getElementById("copy").addEventListener("click", async () => {
+    const btn = document.getElementById("copy");
+    try { await navigator.clipboard.writeText(location.href); btn.textContent = "복사됨"; }
+    catch (e) { btn.textContent = "직접 복사하세요"; }
+    setTimeout(() => (btn.textContent = "주소 복사"), 1500);
+  });
+
+  async function rowsOf(type) {
+    if (DEMO) return JSON.parse(localStorage.getItem(type === "submit" ? "submit-demo" : "guestbook-demo") || "[]");
+    const res = await fetch(API_URL + (type === "submit" ? "?type=submit" : ""), { cache: "no-store" });
     const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "읽기 실패");
+    if (!data.ok) throw new Error(data.error);
     return data.rows;
   }
 
-  async function sendRow(row) {
-    if (DEMO) {
-      const rows = JSON.parse(localStorage.getItem("guestbook-demo") || "[]");
-      rows.push({ time: new Date().toISOString(), ...row });
-      localStorage.setItem("guestbook-demo", JSON.stringify(rows));
-      return;
-    }
-    // text/plain으로 보내면 브라우저의 CORS 사전 요청(preflight)이 생기지 않는다
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(row)
-    });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "저장 실패");
-  }
-
-  // ---------- 화면 그리기 (사용자 입력은 textContent로만) ----------
-  function el(tag, cls, text) {
-    const n = document.createElement(tag);
-    if (cls) n.className = cls;
-    if (text !== undefined) n.textContent = text;
-    return n;
-  }
-
-  function drawBars(boxId, counts, order) {
-    const box = document.getElementById(boxId);
-    const max = Math.max(1, ...Object.values(counts));
-    const keys = order || Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
-    box.replaceChildren();
-    keys.forEach(k => {
-      const row = el("div", "row");
-      const track = el("div", "track");
-      const fill = el("div", "fill");
-      track.appendChild(fill);
-      row.append(el("span", "", k), track, el("span", "num", String(counts[k] || 0)));
-      box.appendChild(row);
-      requestAnimationFrame(() => { fill.style.width = ((counts[k] || 0) / max * 100) + "%"; });
-    });
-  }
-
-  function timeLabel(iso) {
-    const d = new Date(iso);
-    return isNaN(d) ? "" : d.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
-  }
-
-  function render(rows) {
-    document.getElementById("total").textContent = rows.length + "건";
-
-    const byMajor = {};
-    const byLevel = { 쉬움: 0, 적당: 0, 어려움: 0 };
-    rows.forEach(r => {
-      byMajor[r.major] = (byMajor[r.major] || 0) + 1;
-      if (r.level in byLevel) byLevel[r.level]++;
-    });
-    drawBars("majorBars", byMajor);
-    drawBars("levelBars", byLevel, LEVELS);
-
-    const list = document.getElementById("list");
-    list.replaceChildren();
-    if (rows.length === 0) {
-      list.appendChild(el("li", "empty", "아직 글이 없습니다. 첫 글을 남겨 보세요."));
-      return;
-    }
-    rows.slice().reverse().forEach(r => {
-      const key = r.time + r.msg;
-      const li = el("li", seen.size && !seen.has(key) ? "new" : "");
-      li.append(el("div", "text", r.msg), el("div", "meta", `${r.major} · 난이도 ${r.level} · ${timeLabel(r.time)}`));
-      list.appendChild(li);
-    });
-    seen = new Set(rows.map(r => r.time + r.msg));
-  }
-
-  function setStatus(kind, text) {
-    const s = document.getElementById("status");
-    s.className = "status " + kind;
-    s.textContent = text;
-  }
-
   async function refresh() {
+    const s = document.getElementById("status");
     try {
-      render(await fetchRows());
-      setStatus(DEMO ? "demo" : "ok", DEMO ? "데모 모드 · 이 브라우저에만 저장" : "구글 시트 연결됨");
+      const [gb, sub] = await Promise.all([rowsOf("guestbook"), rowsOf("submit")]);
+      document.getElementById("gbCount").textContent = gb.length;
+      const people = new Set(sub.map(r => String(r.name).replace(/\s+/g, "").toLowerCase()));
+      document.getElementById("subCount").textContent = people.size;
+      s.className = "status " + (DEMO ? "demo" : "ok");
+      s.textContent = DEMO ? "데모 모드 · 이 브라우저에만 저장" : "구글 시트 연결됨";
     } catch (e) {
-      setStatus("err", "연결 오류 · 잠시 후 다시 시도");
-      console.error(e);
+      s.className = "status err";
+      s.textContent = "연결 오류 · 잠시 후 다시 시도";
     }
   }
-
-  // ---------- 입력 처리 ----------
-  document.getElementById("levels").addEventListener("click", e => {
-    const b = e.target.closest("button");
-    if (!b) return;
-    level = b.dataset.level;
-    document.querySelectorAll("#levels button").forEach(x => x.classList.toggle("active", x === b));
-  });
-
-  document.getElementById("form").addEventListener("submit", async e => {
-    e.preventDefault();
-    const major = document.getElementById("major").value;
-    const msg = document.getElementById("text").value.trim();
-    const out = document.getElementById("formMsg");
-    if (!major) { out.className = "msg err"; out.textContent = "전공을 선택해 주세요."; return; }
-    if (!msg) { out.className = "msg err"; out.textContent = "소감을 한 줄 입력해 주세요."; return; }
-
-    const btn = document.getElementById("send");
-    btn.disabled = true;
-    out.className = "msg"; out.textContent = "보내는 중…";
-    try {
-      await sendRow({ major, level, msg });
-      document.getElementById("text").value = "";
-      out.className = "msg ok"; out.textContent = "등록되었습니다!";
-      await refresh();
-    } catch (err) {
-      out.className = "msg err"; out.textContent = "저장에 실패했습니다: " + err.message;
-    } finally {
-      btn.disabled = false;
-    }
-  });
 
   refresh();
-  setInterval(refresh, REFRESH_MS);
+  setInterval(refresh, 10000);
 </script>
 </body>
 </html>
