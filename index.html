@@ -3,242 +3,137 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>D-Day 과제 플래너</title>
+<title>바이브코딩 특강 · 강의실</title>
 <style>
   :root {
-    --navy: #0b2a5b;
-    --blue: #1559c7;
-    --sky: #dce8fb;
-    --bg: #f4f7fc;
-    --text: #12233f;
-    --muted: #55657e;
-    --red: #c43b3b;
+    --navy: #0b2a5b; --blue: #1559c7; --sky: #dce8fb; --bg: #f4f7fc;
+    --text: #12233f; --muted: #55657e; --orange: #e07a1f;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-  }
-  header { background: var(--navy); color: #fff; padding: 28px 16px 20px; text-align: center; }
-  header h1 { margin: 0 0 6px; font-size: 1.9rem; }
-  header p { margin: 0; color: #c9daf2; }
-  main { max-width: 680px; margin: 20px auto 40px; padding: 0 16px; }
-
-  .panel { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 4px 14px rgba(11, 42, 91, 0.08); margin-bottom: 16px; }
-  form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  form .full { grid-column: 1 / -1; }
-  label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 4px; }
-  input, select, button { width: 100%; font: inherit; font-size: 1.05rem; padding: 12px; border-radius: 10px; border: 1px solid #c5d4ea; }
-  button { background: var(--blue); color: #fff; border: none; cursor: pointer; font-weight: 700; }
-  button:hover { filter: brightness(1.1); }
-  .error { color: var(--red); font-size: 0.9rem; min-height: 1.2em; margin: 6px 0 0; }
-
-  .progress-text { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 8px; }
-  .bar { height: 14px; background: var(--sky); border-radius: 999px; overflow: hidden; }
-  .bar > div { height: 100%; width: 0; background: var(--blue); transition: width 0.4s; }
-
-  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
-  .chip { width: auto; padding: 6px 14px; border-radius: 999px; background: var(--sky); color: var(--navy); font-size: 0.95rem; }
-  .chip.active { background: var(--navy); color: #fff; }
-
-  ul { list-style: none; padding: 0; margin: 0; }
-  li {
-    background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
-    display: flex; gap: 12px; align-items: center;
-    border-left: 8px solid var(--blue); box-shadow: 0 2px 8px rgba(11, 42, 91, 0.06);
-  }
-  li.urgent { border-left-color: var(--red); }
-  li.urgent .dday { color: var(--red); }
-  li.past, li.done { opacity: 0.55; border-left-color: #9aa8bd; }
-  li.done .title { text-decoration: line-through; }
-  li input[type=checkbox] { width: 24px; height: 24px; flex: none; }
-  .info { flex: 1; min-width: 0; }
-  .title { font-weight: 700; overflow-wrap: anywhere; }
-  .meta { color: var(--muted); font-size: 0.9rem; }
-  .dday { font-weight: 800; font-size: 1.35rem; color: var(--blue); min-width: 74px; text-align: right; }
-  .del { width: auto; background: #eef1f6; color: var(--muted); padding: 6px 10px; font-size: 0.9rem; }
-  .empty { text-align: center; color: var(--muted); padding: 24px; }
-  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 16px; }
-
-  @media (max-width: 480px) {
-    form { grid-template-columns: 1fr; }
-    .dday { font-size: 1.1rem; min-width: 56px; }
-  }
+  body { margin: 0; font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+  .hero { background: linear-gradient(160deg, #0b2a5b 0%, #1559c7 100%); color: #fff; padding: 48px 20px 64px; text-align: center; }
+  .hero .eyebrow { display: inline-block; font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; padding: 4px 14px; border-radius: 999px; background: #ffffff22; margin-bottom: 14px; }
+  .hero h1 { margin: 0 0 10px; font-size: clamp(1.7rem, 5vw, 2.6rem); line-height: 1.25; }
+  .hero p { margin: 0; color: #d6e7ff; font-size: 1.05rem; }
+  .status { display: inline-block; margin-top: 16px; font-size: 0.85rem; padding: 3px 12px; border-radius: 999px; background: #ffffff22; }
+  .status.ok::before { content: "● "; color: #6fe39a; }
+  .status.demo::before { content: "● "; color: #ffc58a; }
+  .status.err::before { content: "● "; color: #ff8a8a; }
+  main { max-width: 920px; margin: -36px auto 40px; padding: 0 16px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  a.card { display: flex; flex-direction: column; gap: 10px; background: #fff; border-radius: 18px; padding: 26px; text-decoration: none; color: var(--text);
+           box-shadow: 0 8px 24px rgba(11, 42, 91, 0.12); border-top: 8px solid var(--blue); transition: transform 0.15s, box-shadow 0.15s; }
+  a.card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(11, 42, 91, 0.18); }
+  a.card.orange { border-top-color: var(--orange); }
+  .card .icon { font-size: 2.4rem; line-height: 1; }
+  .card h2 { margin: 0; font-size: 1.45rem; color: var(--navy); }
+  .card p { margin: 0; color: var(--muted); }
+  .card .stat { margin-top: auto; padding-top: 12px; border-top: 1px solid #e3eaf5; display: flex; justify-content: space-between; align-items: baseline; }
+  .card .stat b { font-size: 1.8rem; color: var(--blue); }
+  .card.orange .stat b { color: #b4500b; }
+  .card .go { font-weight: 700; color: var(--blue); }
+  .card.orange .go { color: #b4500b; }
+  .when { margin: 4px 0 0; font-size: 0.85rem; font-weight: 700; color: var(--navy); }
+  .panel { margin-top: 18px; background: #fff; border-radius: 18px; padding: 22px 26px; box-shadow: 0 4px 14px rgba(11, 42, 91, 0.08); }
+  .panel h3 { margin: 0 0 12px; color: var(--navy); }
+  ol.flow { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; counter-reset: s; }
+  ol.flow li { background: var(--sky); border-radius: 12px; padding: 12px; font-size: 0.92rem; counter-increment: s; }
+  ol.flow li::before { content: counter(s); display: inline-flex; width: 24px; height: 24px; border-radius: 50%; background: var(--navy); color: #fff; font-size: 0.8rem; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; }
+  ol.flow li b { display: block; margin: 4px 0 2px; color: var(--navy); }
+  .share { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .share code { flex: 1; min-width: 220px; background: var(--bg); border: 1px solid #c5d4ea; border-radius: 10px; padding: 10px 12px; font-size: 0.95rem; overflow-wrap: anywhere; }
+  .share button { font: inherit; font-weight: 700; border: none; border-radius: 10px; padding: 10px 16px; background: var(--navy); color: #fff; cursor: pointer; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 0 16px 28px; }
+  @media (max-width: 720px) { .cards { grid-template-columns: 1fr; } ol.flow { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
-<header>
-  <h1>📌 D-Day 과제 플래너</h1>
-  <p>흩어진 마감일을 한 화면에서</p>
-</header>
+<section class="hero">
+  <span class="eyebrow">비전공자 역량 강화 특강</span>
+  <h1 id="courseTitle">AI 바이브코딩 기반 웹/앱 제작</h1>
+  <p id="courseInfo"></p>
+  <span class="status" id="status">연결 확인 중…</span>
+</section>
 
 <main>
+  <div class="cards">
+    <a class="card" href="guestbook.html">
+      <span class="icon">💬</span>
+      <h2>실시간 강의실 방명록</h2>
+      <p>전공 · 난이도 · 한 줄 소감을 남기면 모두의 화면에 바로 나타납니다.</p>
+      <p class="when">시연 시간 · 15:15 무렵</p>
+      <div class="stat"><span><b id="gbCount">–</b> 건</span><span class="go">들어가기 →</span></div>
+    </a>
+    <a class="card orange" href="submit.html">
+      <span class="icon">🚀</span>
+      <h2>실습 결과 제출 · 갤러리</h2>
+      <p>GitHub Pages로 배포한 내 서비스 URL을 제출하고 친구들의 결과물을 써 봅니다.</p>
+      <p class="when">제출 시간 · 16:30 전까지</p>
+      <div class="stat"><span><b id="subCount">–</b> 명 제출</span><span class="go">제출하기 →</span></div>
+    </a>
+  </div>
+
   <section class="panel">
-    <form id="taskForm" novalidate>
-      <div class="full">
-        <label for="title">과제명</label>
-        <input id="title" maxlength="60" placeholder="예: 열역학 실험 보고서">
-      </div>
-      <div>
-        <label for="subject">과목</label>
-        <input id="subject" maxlength="20" placeholder="예: 열역학">
-      </div>
-      <div>
-        <label for="due">마감일</label>
-        <input id="due" type="date">
-      </div>
-      <div class="full"><button type="submit">추가하기</button></div>
-    </form>
-    <p class="error" id="error" role="alert"></p>
+    <h3>오늘의 실습 흐름</h3>
+    <ol class="flow">
+      <li><b>기획</b>워크북으로 문제 · MVP 3개 정하기</li>
+      <li><b>구현</b>AI와 대화로 index.html 만들기</li>
+      <li><b>배포</b>GitHub Pages로 공개 URL 받기</li>
+      <li><b>공유</b>이 사이트에 URL 제출 · 상호 피드백</li>
+    </ol>
   </section>
 
   <section class="panel">
-    <div class="progress-text"><span>완료율</span><span id="progressLabel">0 / 0 (0%)</span></div>
-    <div class="bar"><div id="progressBar"></div></div>
+    <h3>이 페이지 주소</h3>
+    <div class="share">
+      <code id="here"></code>
+      <button type="button" id="copy">주소 복사</button>
+    </div>
   </section>
-
-  <div class="filters" id="filters"></div>
-  <ul id="list"></ul>
 </main>
 
-<footer>이 페이지는 생성형 AI 도구를 활용해 제작되었습니다 · 데이터는 이 브라우저에만 저장됩니다</footer>
+<footer>생성형 AI 도구를 활용해 제작 · 입력한 내용은 강사의 구글 시트에 저장되며 강의실 참가자에게 공개됩니다</footer>
 
+<script src="config.js"></script>
 <script>
-  const KEY = "dday-tasks-v3";
-  const MS_PER_DAY = 24 * 60 * 60 * 1000;
-  let currentFilter = "전체";
+  const DEMO = !API_URL;
 
-  // 저장된 데이터 불러오기(손상된 데이터면 빈 목록으로 시작)
-  function load() {
-    try {
-      const data = JSON.parse(localStorage.getItem(KEY) || "[]");
-      return Array.isArray(data) ? data : [];
-    } catch (e) {
-      return [];
-    }
-  }
-  let tasks = load();
+  document.getElementById("courseTitle").textContent = COURSE.title;
+  document.getElementById("courseInfo").textContent = `${COURSE.date} · ${COURSE.place}`;
+  document.getElementById("here").textContent = location.href;
 
-  function save() {
-    localStorage.setItem(KEY, JSON.stringify(tasks));
-  }
-
-  // "2026-11-27"을 UTC가 아닌 '내 지역의 자정'으로 해석한다
-  function parseLocalDate(str) {
-    const [y, m, d] = str.split("-").map(Number);
-    return new Date(y, m - 1, d);
-  }
-
-  function diffDays(dateStr) {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    return Math.round((parseLocalDate(dateStr) - today) / MS_PER_DAY);
-  }
-
-  function ddayLabel(diff) {
-    if (diff === 0) return "D-Day";
-    return diff > 0 ? "D-" + diff : "D+" + Math.abs(diff);
-  }
-
-  // 사용자 입력은 textContent로만 넣는다(XSS 방지)
-  function el(tag, className, text) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
-  }
-
-  function renderFilters() {
-    const box = document.getElementById("filters");
-    box.replaceChildren();
-    const subjects = ["전체", ...new Set(tasks.map(t => t.subject))];
-    if (!subjects.includes(currentFilter)) currentFilter = "전체";
-    subjects.forEach(s => {
-      const chip = el("button", "chip" + (s === currentFilter ? " active" : ""), s);
-      chip.type = "button";
-      chip.addEventListener("click", () => { currentFilter = s; render(); });
-      box.appendChild(chip);
-    });
-  }
-
-  function renderProgress() {
-    const total = tasks.length;
-    const done = tasks.filter(t => t.done).length;
-    const pct = total ? Math.round((done / total) * 100) : 0;
-    document.getElementById("progressLabel").textContent = `${done} / ${total} (${pct}%)`;
-    document.getElementById("progressBar").style.width = pct + "%";
-  }
-
-  function renderList() {
-    const list = document.getElementById("list");
-    list.replaceChildren();
-    const visible = tasks
-      .filter(t => currentFilter === "전체" || t.subject === currentFilter)
-      .sort((a, b) => a.done - b.done || parseLocalDate(a.due) - parseLocalDate(b.due));
-
-    if (visible.length === 0) {
-      list.appendChild(el("li", "empty", "등록된 과제가 없습니다. 위에서 첫 과제를 추가해 보세요."));
-      return;
-    }
-
-    visible.forEach(t => {
-      const d = diffDays(t.due);
-      let state = "";
-      if (t.done) state = "done";
-      else if (d < 0) state = "past";
-      else if (d <= 3) state = "urgent";
-
-      const li = el("li", state);
-      const check = el("input");
-      check.type = "checkbox";
-      check.checked = t.done;
-      check.setAttribute("aria-label", t.title + " 완료");
-      check.addEventListener("change", () => { t.done = check.checked; save(); render(); });
-
-      const info = el("div", "info");
-      info.append(el("div", "title", t.title), el("div", "meta", `${t.subject} · ${t.due}`));
-
-      const del = el("button", "del", "삭제");
-      del.type = "button";
-      del.addEventListener("click", () => {
-        if (confirm(`'${t.title}' 과제를 삭제할까요?`)) {
-          tasks = tasks.filter(x => x.id !== t.id);
-          save(); render();
-        }
-      });
-
-      li.append(check, info, el("div", "dday", ddayLabel(d)), del);
-      list.appendChild(li);
-    });
-  }
-
-  function render() {
-    renderFilters();
-    renderProgress();
-    renderList();
-  }
-
-  document.getElementById("taskForm").addEventListener("submit", e => {
-    e.preventDefault();
-    const title = document.getElementById("title").value.trim();
-    const subject = document.getElementById("subject").value.trim() || "기타";
-    const due = document.getElementById("due").value;
-    const error = document.getElementById("error");
-
-    if (!title) { error.textContent = "과제명을 입력해 주세요."; return; }
-    if (!due) { error.textContent = "마감일을 선택해 주세요."; return; }
-    error.textContent = "";
-
-    tasks.push({ id: Date.now().toString(36), title, subject, due, done: false });
-    save();
-    e.target.reset();
-    render();
+  document.getElementById("copy").addEventListener("click", async () => {
+    const btn = document.getElementById("copy");
+    try { await navigator.clipboard.writeText(location.href); btn.textContent = "복사됨"; }
+    catch (e) { btn.textContent = "직접 복사하세요"; }
+    setTimeout(() => (btn.textContent = "주소 복사"), 1500);
   });
 
-  render();
+  async function rowsOf(type) {
+    if (DEMO) return JSON.parse(localStorage.getItem(type === "submit" ? "submit-demo" : "guestbook-demo") || "[]");
+    const res = await fetch(API_URL + (type === "submit" ? "?type=submit" : ""), { cache: "no-store" });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    return data.rows;
+  }
+
+  async function refresh() {
+    const s = document.getElementById("status");
+    try {
+      const [gb, sub] = await Promise.all([rowsOf("guestbook"), rowsOf("submit")]);
+      document.getElementById("gbCount").textContent = gb.length;
+      const people = new Set(sub.map(r => String(r.name).replace(/\s+/g, "").toLowerCase()));
+      document.getElementById("subCount").textContent = people.size;
+      s.className = "status " + (DEMO ? "demo" : "ok");
+      s.textContent = DEMO ? "데모 모드 · 이 브라우저에만 저장" : "구글 시트 연결됨";
+    } catch (e) {
+      s.className = "status err";
+      s.textContent = "연결 오류 · 잠시 후 다시 시도";
+    }
+  }
+
+  refresh();
+  setInterval(refresh, 10000);
 </script>
 </body>
 </html>
