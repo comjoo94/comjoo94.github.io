@@ -1,639 +1,244 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오늘의 학식 메뉴 투표</title>
-    <!-- Tailwind CSS 로드 -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Pretendard & Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome 아이콘 로드 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Noto Sans KR"', 'Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        navy: {
-                            800: '#1e3a8a',
-                            900: '#0f172a',
-                        },
-                        cobalt: {
-                            500: '#2563eb',
-                            600: '#1d4ed8',
-                            700: '#1e40af',
-                        },
-                        sky: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D-Day 과제 플래너</title>
+<style>
+  :root {
+    --navy: #0b2a5b;
+    --blue: #1559c7;
+    --sky: #dce8fb;
+    --bg: #f4f7fc;
+    --text: #12233f;
+    --muted: #55657e;
+    --red: #c43b3b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header { background: var(--navy); color: #fff; padding: 28px 16px 20px; text-align: center; }
+  header h1 { margin: 0 0 6px; font-size: 1.9rem; }
+  header p { margin: 0; color: #c9daf2; }
+  main { max-width: 680px; margin: 20px auto 40px; padding: 0 16px; }
+
+  .panel { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 4px 14px rgba(11, 42, 91, 0.08); margin-bottom: 16px; }
+  form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  form .full { grid-column: 1 / -1; }
+  label { font-size: 0.85rem; color: var(--muted); display: block; margin-bottom: 4px; }
+  input, select, button { width: 100%; font: inherit; font-size: 1.05rem; padding: 12px; border-radius: 10px; border: 1px solid #c5d4ea; }
+  button { background: var(--blue); color: #fff; border: none; cursor: pointer; font-weight: 700; }
+  button:hover { filter: brightness(1.1); }
+  .error { color: var(--red); font-size: 0.9rem; min-height: 1.2em; margin: 6px 0 0; }
+
+  .progress-text { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 8px; }
+  .bar { height: 14px; background: var(--sky); border-radius: 999px; overflow: hidden; }
+  .bar > div { height: 100%; width: 0; background: var(--blue); transition: width 0.4s; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 12px; }
+  .chip { width: auto; padding: 6px 14px; border-radius: 999px; background: var(--sky); color: var(--navy); font-size: 0.95rem; }
+  .chip.active { background: var(--navy); color: #fff; }
+
+  ul { list-style: none; padding: 0; margin: 0; }
+  li {
+    background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+    display: flex; gap: 12px; align-items: center;
+    border-left: 8px solid var(--blue); box-shadow: 0 2px 8px rgba(11, 42, 91, 0.06);
+  }
+  li.urgent { border-left-color: var(--red); }
+  li.urgent .dday { color: var(--red); }
+  li.past, li.done { opacity: 0.55; border-left-color: #9aa8bd; }
+  li.done .title { text-decoration: line-through; }
+  li input[type=checkbox] { width: 24px; height: 24px; flex: none; }
+  .info { flex: 1; min-width: 0; }
+  .title { font-weight: 700; overflow-wrap: anywhere; }
+  .meta { color: var(--muted); font-size: 0.9rem; }
+  .dday { font-weight: 800; font-size: 1.35rem; color: var(--blue); min-width: 74px; text-align: right; }
+  .del { width: auto; background: #eef1f6; color: var(--muted); padding: 6px 10px; font-size: 0.9rem; }
+  .empty { text-align: center; color: var(--muted); padding: 24px; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 16px; }
+
+  @media (max-width: 480px) {
+    form { grid-template-columns: 1fr; }
+    .dday { font-size: 1.1rem; min-width: 56px; }
+  }
+</style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col justify-between selection:bg-blue-200 selection:text-blue-900">
+<body>
+<header>
+  <h1>📌 D-Day 과제 플래너</h1>
+  <p>흩어진 마감일을 한 화면에서</p>
+</header>
 
-    <!-- 상단 헤더 (네이비 & 코발트 블루 그라데이션) -->
-    <header class="bg-gradient-to-r from-slate-900 via-blue-900 to-blue-800 text-white shadow-lg sticky top-0 z-30">
-        <div class="max-w-2xl mx-auto px-4 py-4 sm:py-5 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-blue-500/30 border border-blue-400/30 flex items-center justify-center text-sky-300 shadow-inner">
-                    <i class="fa-solid fa-utensils text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg sm:text-xl font-bold tracking-tight">오늘의 학식 투표</h1>
-                    <p id="current-date" class="text-xs text-blue-200 font-medium"></p>
-                </div>
-            </div>
-            
-            <!-- 관리 버튼 (메뉴 수정 / 초기화) -->
-            <div class="flex items-center space-x-2">
-                <button id="btn-edit-menu" type="button" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 active:bg-white/25 text-xs sm:text-sm font-medium text-blue-100 transition flex items-center space-x-1.5 backdrop-blur-sm">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span>메뉴 수정</span>
-                </button>
-                <button id="btn-reset-vote" type="button" class="px-3 py-2 rounded-lg bg-blue-600/50 hover:bg-blue-600 active:bg-blue-700 text-xs sm:text-sm font-medium text-white border border-blue-400/30 transition flex items-center space-x-1.5">
-                    <i class="fa-solid fa-rotate-right"></i>
-                    <span class="hidden sm:inline">초기화</span>
-                </button>
-            </div>
-        </div>
-    </header>
+<main>
+  <section class="panel">
+    <form id="taskForm" novalidate>
+      <div class="full">
+        <label for="title">과제명</label>
+        <input id="title" maxlength="60" placeholder="예: 열역학 실험 보고서">
+      </div>
+      <div>
+        <label for="subject">과목</label>
+        <input id="subject" maxlength="20" placeholder="예: 열역학">
+      </div>
+      <div>
+        <label for="due">마감일</label>
+        <input id="due" type="date">
+      </div>
+      <div class="full"><button type="submit">추가하기</button></div>
+    </form>
+    <p class="error" id="error" role="alert"></p>
+  </section>
 
-    <!-- 메인 컨테이너 -->
-    <main class="max-w-2xl w-full mx-auto px-4 py-6 sm:py-8 flex-grow space-y-6">
-        
-        <!-- 안내 배너 -->
-        <section class="bg-gradient-to-br from-blue-50 to-sky-100/70 border border-blue-200/80 rounded-2xl p-4 sm:p-5 shadow-sm flex items-start space-x-3.5">
-            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
-                <i class="fa-solid fa-check-to-slot text-sm"></i>
-            </div>
-            <div>
-                <h2 class="text-sm sm:text-base font-bold text-blue-950">오늘 점심, 어떤 메뉴가 가장 끌리나요?</h2>
-                <p class="text-xs sm:text-sm text-blue-800/80 mt-1 leading-relaxed">
-                    아래 3가지 코너 중 먹고 싶은 메뉴 카드를 터치해 투표해 주세요. 결과는 실시간 그래프로 집계됩니다!
-                </p>
-            </div>
-        </section>
+  <section class="panel">
+    <div class="progress-text"><span>완료율</span><span id="progressLabel">0 / 0 (0%)</span></div>
+    <div class="bar"><div id="progressBar"></div></div>
+  </section>
 
-        <!-- 투표 카드 리스트 (모바일 터치 최적화) -->
-        <section aria-label="학식 메뉴 선택">
-            <div class="flex items-center justify-between mb-3 px-1">
-                <h3 class="text-base font-bold text-slate-800 flex items-center space-x-2">
-                    <span class="w-2 h-5 bg-blue-600 rounded-full inline-block"></span>
-                    <span>오늘의 메뉴 후보</span>
-                </h3>
-                <span id="vote-status-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-600">
-                    투표 전
-                </span>
-            </div>
+  <div class="filters" id="filters"></div>
+  <ul id="list"></ul>
+</main>
 
-            <div id="menu-cards-container" class="grid grid-cols-1 gap-3.5 sm:gap-4">
-                <!-- JavaScript로 동적 렌더링 -->
-            </div>
-        </section>
+<footer>이 페이지는 생성형 AI 도구를 활용해 제작되었습니다 · 데이터는 이 브라우저에만 저장됩니다</footer>
 
-        <!-- 실시간 투표 결과 막대그래프 섹션 -->
-        <section aria-label="실시간 투표 결과" class="bg-white rounded-2xl border border-slate-200/90 shadow-md p-5 sm:p-6">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
-                <div>
-                    <h3 class="text-base sm:text-lg font-bold text-slate-900 flex items-center space-x-2">
-                        <i class="fa-solid fa-chart-simple text-blue-600"></i>
-                        <span>실시간 선호도 결과</span>
-                    </h3>
-                    <p class="text-xs text-slate-500 mt-0.5">투표 참여 시 막대그래프가 즉시 업데이트됩니다</p>
-                </div>
-                <div class="text-right">
-                    <span class="text-xs text-slate-400 block">총 참여 인원</span>
-                    <span class="text-lg sm:text-xl font-extrabold text-blue-700"><span id="total-votes">0</span><span class="text-xs font-medium text-slate-500 ml-0.5">명</span></span>
-                </div>
-            </div>
+<script>
+  const KEY = "dday-tasks-v3";
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  let currentFilter = "전체";
 
-            <!-- 막대그래프 컨테이너 -->
-            <div id="chart-container" class="space-y-5">
-                <!-- JavaScript로 동적 렌더링 -->
-            </div>
-        </section>
+  // 저장된 데이터 불러오기(손상된 데이터면 빈 목록으로 시작)
+  function load() {
+    try {
+      const data = JSON.parse(localStorage.getItem(KEY) || "[]");
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  let tasks = load();
 
-    </main>
+  function save() {
+    localStorage.setItem(KEY, JSON.stringify(tasks));
+  }
 
-    <!-- 푸터 -->
-    <footer class="max-w-2xl w-full mx-auto px-4 py-6 text-center text-xs text-slate-400">
-        <p>학생식당 메뉴 수요조사 시스템 &bull; 브라우저에 투표 내역이 자동 저장됩니다.</p>
-    </footer>
+  // "2026-11-27"을 UTC가 아닌 '내 지역의 자정'으로 해석한다
+  function parseLocalDate(str) {
+    const [y, m, d] = str.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
 
-    <!-- 알림 토스트 메시지 (alert 대체) -->
-    <div id="toast-notification" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 translate-y-4 w-[90%] max-w-sm">
-        <div class="bg-slate-900/95 backdrop-blur-md text-white px-4 py-3.5 rounded-xl shadow-xl border border-blue-500/30 flex items-center space-x-3">
-            <div id="toast-icon" class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                <i class="fa-solid fa-check text-xs"></i>
-            </div>
-            <p id="toast-message" class="text-sm font-medium leading-snug"></p>
-        </div>
-    </div>
+  function diffDays(dateStr) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.round((parseLocalDate(dateStr) - today) / MS_PER_DAY);
+  }
 
-    <!-- 메뉴 수정 모달 -->
-    <div id="edit-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
-            <div class="bg-blue-900 text-white px-5 py-4 flex items-center justify-between">
-                <h4 class="font-bold text-base flex items-center space-x-2">
-                    <i class="fa-solid fa-pen-to-square text-sky-300"></i>
-                    <span>오늘의 학식 메뉴 수정</span>
-                </h4>
-                <button id="btn-close-modal" type="button" class="text-blue-200 hover:text-white p-1 rounded-lg">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
-            </div>
-            <form id="edit-menu-form" class="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
-                <div id="edit-inputs-container" class="space-y-4">
-                    <!-- JavaScript로 수정 입력 폼 동적 생성 -->
-                </div>
-                <div class="pt-3 border-t border-slate-100 flex items-center justify-end space-x-2">
-                    <button type="button" id="btn-cancel-modal" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">
-                        취소
-                    </button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 transition">
-                        저장하기
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+  function ddayLabel(diff) {
+    if (diff === 0) return "D-Day";
+    return diff > 0 ? "D-" + diff : "D+" + Math.abs(diff);
+  }
 
-    <!-- 초기화 확인 모달 (confirm 대체) -->
-    <div id="reset-modal" class="fixed inset-0 z-40 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl border border-slate-200 p-6 text-center">
-            <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-rotate-right text-xl"></i>
-            </div>
-            <h4 class="text-lg font-bold text-slate-900 mb-1">투표 데이터를 초기화할까요?</h4>
-            <p class="text-sm text-slate-500 mb-6">모든 메뉴의 득표수가 0표로 초기화되며, 내 투표 기록도 함께 지워집니다.</p>
-            <div class="grid grid-cols-2 gap-2.5">
-                <button type="button" id="btn-cancel-reset" class="py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition">
-                    취소
-                </button>
-                <button type="button" id="btn-confirm-reset" class="py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 transition">
-                    초기화 실행
-                </button>
-            </div>
-        </div>
-    </div>
+  // 사용자 입력은 textContent로만 넣는다(XSS 방지)
+  function el(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
 
-    <script>
-        /**
-         * 학식 메뉴 투표 애플리케이션 로직
-         * - LocalStorage를 이용해 새로고침 후에도 데이터 및 내 투표 상태 유지
-         * - 파란색 계열(네이비, 코발트 블루, 스카이 블루)의 시각적 구분 적용
-         */
+  function renderFilters() {
+    const box = document.getElementById("filters");
+    box.replaceChildren();
+    const subjects = ["전체", ...new Set(tasks.map(t => t.subject))];
+    if (!subjects.includes(currentFilter)) currentFilter = "전체";
+    subjects.forEach(s => {
+      const chip = el("button", "chip" + (s === currentFilter ? " active" : ""), s);
+      chip.type = "button";
+      chip.addEventListener("click", () => { currentFilter = s; render(); });
+      box.appendChild(chip);
+    });
+  }
 
-        const STORAGE_KEY = 'cafeteria_vote_data_v1';
+  function renderProgress() {
+    const total = tasks.length;
+    const done = tasks.filter(t => t.done).length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    document.getElementById("progressLabel").textContent = `${done} / ${total} (${pct}%)`;
+    document.getElementById("progressBar").style.width = pct + "%";
+  }
 
-        // 기본 초기 메뉴 데이터 (실제 대학 학식 느낌의 3가지 코너 및 초기 샘플 표)
-        const DEFAULT_MENUS = [
-            {
-                id: 'menu-1',
-                corner: '코너 A · 한식 특식',
-                title: '직화 제육덮밥 & 차돌 된장찌개',
-                sides: '계란후라이, 배추김치, 콩나물무침, 요구르트',
-                calories: '840 kcal',
-                icon: 'fa-bowl-rice',
-                votes: 14,
-                barColor: 'from-blue-800 to-blue-600',
-                badgeBg: 'bg-blue-900 text-white'
-            },
-            {
-                id: 'menu-2',
-                corner: '코너 B · 양식 프리미엄',
-                title: '수제 치즈 돈까스 & 양송이 크림스프',
-                sides: '흑미밥, 양배추 샐러드, 할라피뇨 피클, 마카로니',
-                calories: '920 kcal',
-                icon: 'fa-plate-wheat',
-                votes: 19,
-                barColor: 'from-blue-600 to-sky-500',
-                badgeBg: 'bg-blue-600 text-white'
-            },
-            {
-                id: 'menu-3',
-                corner: '코너 C · 일식/분식',
-                title: '가쓰오 유부 우동 & 모둠 유부초밥',
-                sides: '단무지 무침, 미니 고로케, 열무김치',
-                calories: '710 kcal',
-                icon: 'fa-bowl-food',
-                votes: 9,
-                barColor: 'from-sky-500 to-cyan-400',
-                badgeBg: 'bg-sky-600 text-white'
-            }
-        ];
+  function renderList() {
+    const list = document.getElementById("list");
+    list.replaceChildren();
+    const visible = tasks
+      .filter(t => currentFilter === "전체" || t.subject === currentFilter)
+      .sort((a, b) => a.done - b.done || parseLocalDate(a.due) - parseLocalDate(b.due));
 
-        // 애플리케이션 상태
-        let appState = {
-            menus: [],
-            userVotedId: null
-        };
+    if (visible.length === 0) {
+      list.appendChild(el("li", "empty", "등록된 과제가 없습니다. 위에서 첫 과제를 추가해 보세요."));
+      return;
+    }
 
-        // DOM 요소 참조
-        const menuCardsContainer = document.getElementById('menu-cards-container');
-        const chartContainer = document.getElementById('chart-container');
-        const totalVotesEl = document.getElementById('total-votes');
-        const voteStatusBadge = document.getElementById('vote-status-badge');
-        const currentDateEl = document.getElementById('current-date');
+    visible.forEach(t => {
+      const d = diffDays(t.due);
+      let state = "";
+      if (t.done) state = "done";
+      else if (d < 0) state = "past";
+      else if (d <= 3) state = "urgent";
 
-        // 토스트 알림 타이머
-        let toastTimeout = null;
+      const li = el("li", state);
+      const check = el("input");
+      check.type = "checkbox";
+      check.checked = t.done;
+      check.setAttribute("aria-label", t.title + " 완료");
+      check.addEventListener("change", () => { t.done = check.checked; save(); render(); });
 
-        /**
-         * 초기화 함수: 날짜 표시, 저장된 데이터 로드, UI 렌더링 및 이벤트 바인딩
-         */
-        function init() {
-            renderTodayDate();
-            loadState();
-            renderAll();
-            bindEvents();
+      const info = el("div", "info");
+      info.append(el("div", "title", t.title), el("div", "meta", `${t.subject} · ${t.due}`));
+
+      const del = el("button", "del", "삭제");
+      del.type = "button";
+      del.addEventListener("click", () => {
+        if (confirm(`'${t.title}' 과제를 삭제할까요?`)) {
+          tasks = tasks.filter(x => x.id !== t.id);
+          save(); render();
         }
+      });
 
-        /**
-         * 오늘 날짜를 한국어 포맷으로 헤더에 표시
-         */
-        function renderTodayDate() {
-            const now = new Date();
-            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-            currentDateEl.textContent = now.toLocaleDateString('ko-KR', options);
-        }
+      li.append(check, info, el("div", "dday", ddayLabel(d)), del);
+      list.appendChild(li);
+    });
+  }
 
-        /**
-         * LocalStorage에서 상태 불러오기 (예외 처리 포함)
-         */
-        function loadState() {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    if (Array.isArray(parsed.menus) && parsed.menus.length === 3) {
-                        appState = parsed;
-                        return;
-                    }
-                }
-            } catch (error) {
-                console.error('데이터 로드 중 오류 발생:', error);
-            }
-            // 저장된 데이터가 없거나 손상된 경우 기본값 복사
-            appState = {
-                menus: JSON.parse(JSON.stringify(DEFAULT_MENUS)),
-                userVotedId: null
-            };
-            saveState();
-        }
+  function render() {
+    renderFilters();
+    renderProgress();
+    renderList();
+  }
 
-        /**
-         * LocalStorage에 현재 상태 저장
-         */
-        function saveState() {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-            } catch (error) {
-                console.error('데이터 저장 중 오류 발생:', error);
-            }
-        }
+  document.getElementById("taskForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const title = document.getElementById("title").value.trim();
+    const subject = document.getElementById("subject").value.trim() || "기타";
+    const due = document.getElementById("due").value;
+    const error = document.getElementById("error");
 
-        /**
-         * 전체 UI (투표 카드 + 막대그래프) 갱신
-         */
-        function renderAll() {
-            renderMenuCards();
-            renderBarChart();
-            updateStatusBadge();
-        }
+    if (!title) { error.textContent = "과제명을 입력해 주세요."; return; }
+    if (!due) { error.textContent = "마감일을 선택해 주세요."; return; }
+    error.textContent = "";
 
-        /**
-         * 상단 투표 상태 배지 업데이트
-         */
-        function updateStatusBadge() {
-            if (appState.userVotedId) {
-                const votedMenu = appState.menus.find(m => m.id === appState.userVotedId);
-                voteStatusBadge.className = 'text-xs font-bold px-3 py-1 rounded-full bg-blue-100 text-blue-700 border border-blue-200 flex items-center space-x-1';
-                voteStatusBadge.innerHTML = `<i class="fa-solid fa-circle-check text-blue-600"></i> <span>투표 완료</span>`;
-            } else {
-                voteStatusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200/80 text-slate-600';
-                voteStatusBadge.textContent = '1인 1표 선택 가능';
-            }
-        }
+    tasks.push({ id: Date.now().toString(36), title, subject, due, done: false });
+    save();
+    e.target.reset();
+    render();
+  });
 
-        /**
-         * 3개의 학식 메뉴 투표 카드 렌더링
-         */
-        function renderMenuCards() {
-            menuCardsContainer.innerHTML = '';
-
-            appState.menus.forEach((menu) => {
-                const isSelected = appState.userVotedId === menu.id;
-                
-                // 선택 여부에 따른 동적 스타일링
-                const cardClasses = isSelected
-                    ? 'bg-blue-50/90 border-2 border-blue-600 shadow-md shadow-blue-600/10 ring-2 ring-blue-600/15'
-                    : 'bg-white border border-slate-200/90 hover:border-blue-400 hover:shadow-md active:scale-[0.99]';
-
-                const buttonClasses = isSelected
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-700 group-hover:bg-blue-600 group-hover:text-white';
-
-                const card = document.createElement('div');
-                card.className = `group relative rounded-2xl p-4 sm:p-5 transition-all duration-200 cursor-pointer select-none ${cardClasses}`;
-                card.setAttribute('role', 'button');
-                card.setAttribute('tabindex', '0');
-                card.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
-
-                card.innerHTML = `
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="flex-1 min-w-0">
-                            <!-- 코너 배지 및 칼로리 -->
-                            <div class="flex items-center flex-wrap gap-2 mb-2">
-                                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-md ${menu.badgeBg}">
-                                    ${escapeHTML(menu.corner)}
-                                </span>
-                                <span class="text-xs text-slate-400 font-medium">
-                                    <i class="fa-solid fa-fire-flame-curved text-sky-500 mr-1"></i>${escapeHTML(menu.calories)}
-                                </span>
-                            </div>
-                            
-                            <!-- 메인 메뉴명 -->
-                            <h4 class="text-base sm:text-lg font-extrabold text-slate-900 leading-snug mb-1.5">
-                                ${escapeHTML(menu.title)}
-                            </h4>
-                            
-                            <!-- 서브 반찬 구성 -->
-                            <p class="text-xs sm:text-sm text-slate-500 leading-relaxed line-clamp-2">
-                                <span class="font-semibold text-slate-600">구성:</span> ${escapeHTML(menu.sides)}
-                            </p>
-                        </div>
-
-                        <!-- 우측 투표 액션 버튼 (모바일 터치 영역 확보) -->
-                        <div class="flex flex-col items-end justify-between self-stretch flex-shrink-0">
-                            <div class="w-11 h-11 rounded-xl flex items-center justify-center transition-colors duration-200 ${buttonClasses}">
-                                <i class="fa-solid ${isSelected ? 'fa-check text-lg' : menu.icon + ' text-base'}"></i>
-                            </div>
-                            <span class="text-xs font-bold mt-2 ${isSelected ? 'text-blue-700' : 'text-slate-400 group-hover:text-blue-600'}">
-                                ${isSelected ? '선택됨' : '투표하기'}
-                            </span>
-                        </div>
-                    </div>
-                `;
-
-                // 클릭 및 키보드 엔터/스페이스 이벤트 연결
-                card.addEventListener('click', () => handleVote(menu.id));
-                card.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleVote(menu.id);
-                    }
-                });
-
-                menuCardsContainer.appendChild(card);
-            });
-        }
-
-        /**
-         * 실시간 투표 결과 막대그래프 렌더링
-         */
-        function renderBarChart() {
-            const totalVotes = appState.menus.reduce((sum, menu) => sum + menu.votes, 0);
-            totalVotesEl.textContent = totalVotes.toLocaleString();
-
-            // 최다 득표 메뉴 찾기 (동점 포함, 1표 이상일 때)
-            const maxVotes = Math.max(...appState.menus.map(m => m.votes));
-
-            chartContainer.innerHTML = '';
-
-            appState.menus.forEach((menu) => {
-                const percentage = totalVotes > 0 ? ((menu.votes / totalVotes) * 100) : 0;
-                const formattedPercent = percentage % 1 === 0 ? percentage.toFixed(0) : percentage.toFixed(1);
-                const isWinner = totalVotes > 0 && menu.votes === maxVotes;
-                const isMyChoice = appState.userVotedId === menu.id;
-
-                const row = document.createElement('div');
-                row.className = 'space-y-2';
-
-                row.innerHTML = `
-                    <div class="flex items-end justify-between gap-2">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center space-x-1.5">
-                                <span class="text-xs font-bold text-blue-700">${escapeHTML(menu.corner.split('·')[0].trim())}</span>
-                                ${isWinner ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-200"><i class="fa-solid fa-crown text-amber-500 mr-1"></i>1위</span>' : ''}
-                                ${isMyChoice ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700">내 선택</span>' : ''}
-                            </div>
-                            <p class="text-sm font-bold text-slate-800 truncate mt-0.5">${escapeHTML(menu.title)}</p>
-                        </div>
-                        <div class="text-right flex-shrink-0">
-                            <span class="text-base sm:text-lg font-extrabold text-slate-900">${formattedPercent}%</span>
-                            <span class="text-xs font-medium text-slate-500 ml-1">(${menu.votes}표)</span>
-                        </div>
-                    </div>
-
-                    <!-- 막대그래프 트랙 및 게이지 -->
-                    <div class="w-full h-4 sm:h-5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/70 shadow-inner">
-                        <div 
-                            class="h-full rounded-full bg-gradient-to-r ${menu.barColor} transition-all duration-700 ease-out relative"
-                            style="width: ${percentage}%"
-                            role="progressbar"
-                            aria-valuenow="${formattedPercent}"
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                        >
-                            ${percentage > 12 ? '<div class="w-full h-full bg-white/15 rounded-full"></div>' : ''}
-                        </div>
-                    </div>
-                `;
-
-                chartContainer.appendChild(row);
-            });
-        }
-
-        /**
-         * 사용자 투표 처리 (신규 투표, 다른 메뉴로 변경, 동일 메뉴 재클릭 시 취소)
-         */
-        function handleVote(selectedId) {
-            const prevVotedId = appState.userVotedId;
-
-            if (prevVotedId === selectedId) {
-                // 이미 선택한 메뉴를 다시 누르면 투표 취소
-                const targetMenu = appState.menus.find(m => m.id === selectedId);
-                if (targetMenu && targetMenu.votes > 0) {
-                    targetMenu.votes -= 1;
-                }
-                appState.userVotedId = null;
-                showToast('투표가 취소되었습니다. 다시 선택할 수 있습니다.');
-            } else {
-                // 이전 투표가 있다면 차감
-                if (prevVotedId) {
-                    const prevMenu = appState.menus.find(m => m.id === prevVotedId);
-                    if (prevMenu && prevMenu.votes > 0) {
-                        prevMenu.votes -= 1;
-                    }
-                }
-                // 새 메뉴 득표수 증가
-                const newMenu = appState.menus.find(m => m.id === selectedId);
-                if (newMenu) {
-                    newMenu.votes += 1;
-                    appState.userVotedId = selectedId;
-                    showToast(`'${newMenu.title}' 메뉴에 투표했습니다!`);
-                }
-            }
-
-            saveState();
-            renderAll();
-        }
-
-        /**
-         * 토스트 알림 메시지 출력
-         */
-        function showToast(message) {
-            const toast = document.getElementById('toast-notification');
-            const toastMsg = document.getElementById('toast-message');
-            
-            toastMsg.textContent = message;
-            toast.classList.remove('opacity-0', 'translate-y-4');
-            toast.classList.add('opacity-100', 'translate-y-0');
-
-            if (toastTimeout) clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                toast.classList.remove('opacity-100', 'translate-y-0');
-                toast.classList.add('opacity-0', 'translate-y-4');
-            }, 2600);
-        }
-
-        /**
-         * 메뉴 수정 모달 열기
-         */
-        function openEditModal() {
-            const container = document.getElementById('edit-inputs-container');
-            container.innerHTML = '';
-
-            appState.menus.forEach((menu, index) => {
-                const block = document.createElement('div');
-                block.className = 'p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5';
-                block.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-extrabold text-blue-700 uppercase tracking-wider">후보 ${index + 1} (${escapeHTML(menu.corner)})</span>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">메인 메뉴명</label>
-                        <input type="text" name="title-${menu.id}" value="${escapeHTML(menu.title)}" required
-                            class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <div class="sm:col-span-2">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">사이드 반찬 구성</label>
-                            <input type="text" name="sides-${menu.id}" value="${escapeHTML(menu.sides)}" required
-                                class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">열량</label>
-                            <input type="text" name="calories-${menu.id}" value="${escapeHTML(menu.calories)}" required
-                                class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-                    </div>
-                `;
-                container.appendChild(block);
-            });
-
-            const modal = document.getElementById('edit-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeEditModal() {
-            const modal = document.getElementById('edit-modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        /**
-         * 각종 버튼 및 폼 이벤트 바인딩
-         */
-        function bindEvents() {
-            // 메뉴 수정 모달 제어
-            document.getElementById('btn-edit-menu').addEventListener('click', openEditModal);
-            document.getElementById('btn-close-modal').addEventListener('click', closeEditModal);
-            document.getElementById('btn-cancel-modal').addEventListener('click', closeEditModal);
-
-            // 메뉴 수정 저장
-            document.getElementById('edit-menu-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-
-                appState.menus.forEach((menu) => {
-                    const newTitle = formData.get(`title-${menu.id}`)?.trim();
-                    const newSides = formData.get(`sides-${menu.id}`)?.trim();
-                    const newCalories = formData.get(`calories-${menu.id}`)?.trim();
-
-                    if (newTitle) menu.title = newTitle;
-                    if (newSides) menu.sides = newSides;
-                    if (newCalories) menu.calories = newCalories;
-                });
-
-                saveState();
-                renderAll();
-                closeEditModal();
-                showToast('오늘의 학식 메뉴 정보가 수정되었습니다.');
-            });
-
-            // 초기화 모달 제어
-            const resetModal = document.getElementById('reset-modal');
-            document.getElementById('btn-reset-vote').addEventListener('click', () => {
-                resetModal.classList.remove('hidden');
-                resetModal.classList.add('flex');
-            });
-
-            document.getElementById('btn-cancel-reset').addEventListener('click', () => {
-                resetModal.classList.add('hidden');
-                resetModal.classList.remove('flex');
-            });
-
-            document.getElementById('btn-confirm-reset').addEventListener('click', () => {
-                appState.menus.forEach(menu => menu.votes = 0);
-                appState.userVotedId = null;
-                saveState();
-                renderAll();
-                resetModal.classList.add('hidden');
-                resetModal.classList.remove('flex');
-                showToast('모든 투표 수가 0표로 초기화되었습니다.');
-            });
-
-            // 모달 바깥 영역 클릭 시 닫기
-            document.getElementById('edit-modal').addEventListener('click', (e) => {
-                if (e.target.id === 'edit-modal') closeEditModal();
-            });
-            resetModal.addEventListener('click', (e) => {
-                if (e.target.id === 'reset-modal') {
-                    resetModal.classList.add('hidden');
-                    resetModal.classList.remove('flex');
-                }
-            });
-        }
-
-        /**
-         * XSS 방지를 위한 HTML 이스케이프 유틸리티
-         */
-        function escapeHTML(str) {
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-
-        // 페이지 로드 시 실행
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
+  render();
+</script>
 </body>
 </html>
